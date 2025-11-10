@@ -1,6 +1,7 @@
 <script lang="ts">
   import { invalidateAll } from "$app/navigation";
   import Modal from "$lib/components/Modal.svelte";
+  import MDInput from "$lib/components/MDInput.svelte";
   import CheckToggle from "$lib/components/CheckToggle.svelte";
   import type { PageProps } from "./$types";
   import dayjs from "dayjs";
@@ -24,10 +25,12 @@
     { label: "Next 2 weeks", value: "14" },
     { label: "Next month", value: "30" },
   ] as const;
+  const previewToggleId = "task-preview-toggle";
 
   let taskModalState: {
     isOpen: boolean;
     mode: "create" | "update";
+    isPreview: boolean;
     fields: {
       id: string;
       name: string;
@@ -38,6 +41,7 @@
   } = $state({
     isOpen: false,
     mode: "create",
+    isPreview: false,
     fields: {
       id: "",
       name: "",
@@ -90,6 +94,7 @@
 
   function openCreateTaskModal() {
     taskModalState.mode = "create";
+    taskModalState.isPreview = false;
     taskModalState.fields.id = "";
     taskModalState.fields.name = "";
     taskModalState.fields.due = null;
@@ -100,6 +105,7 @@
 
   function openUpdateTaskModal(task: Task) {
     taskModalState.mode = "update";
+    taskModalState.isPreview = true;
     taskModalState.fields.id = task.id;
     taskModalState.fields.status = task.status;
     taskModalState.fields.name = task.name;
@@ -107,8 +113,6 @@
     taskModalState.fields.content = task.content;
     taskModalState.isOpen = true;
   }
-
-  let md = $state("");
 </script>
 
 <section class="space-y-6">
@@ -301,17 +305,36 @@
       />
     </div>
     <div class="flex w-full flex-col gap-2">
-      <label
-        for="content"
-        class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
-        >Details</label
-      >
-      <textarea
+      <div class="flex items-center justify-between gap-3">
+        <label
+          for="content"
+          class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
+          >Details</label
+        >
+        <label
+          for={previewToggleId}
+          class="flex items-center gap-2 rounded-full border border-slate-700/70 bg-slate-900/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-400"
+        >
+          Preview
+          <span class="relative inline-flex items-center">
+            <input
+              id={previewToggleId}
+              type="checkbox"
+              bind:checked={taskModalState.isPreview}
+              class="peer sr-only"
+            />
+            <span class="block h-5 w-9 rounded-full border border-slate-700 bg-slate-800 transition peer-checked:border-slate-200 peer-checked:bg-slate-200"></span>
+            <span class="absolute left-0.5 top-0.5 block h-4 w-4 rounded-full bg-white transition peer-checked:translate-x-4"></span>
+          </span>
+        </label>
+      </div>
+      <MDInput
+        isPreview={taskModalState.isPreview}
         bind:value={taskModalState.fields.content}
         name="content"
         placeholder="Add context, links, or checklists..."
-        class="min-h-[20vh] h-[30vh] max-h-[40vh] rounded-2xl border border-slate-800/70 bg-slate-950 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-slate-500 focus:outline-none"
-      ></textarea>
+        class="min-h-[30vh] h-[50vh] max-h-[70vh] rounded-2xl border border-slate-800/70 bg-slate-950 p-4 text-sm text-white placeholder:text-slate-600 focus:border-slate-500 focus:outline-none {taskModalState.isPreview ? 'overflow-y-scroll' : ''}"
+      ></MDInput>
     </div>
     <div class="flex flex-wrap items-center justify-between gap-3">
       {#if taskModalState.mode == "update"}

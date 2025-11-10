@@ -9,6 +9,7 @@
   type Note = (typeof data.notes)[number];
 
   const noteAccentPalette = ["bg-slate-900", "bg-slate-900"] as const;
+  const notePreviewToggleId = "note-preview-toggle";
 
   let noteModalState: {
     isOpen: boolean;
@@ -129,7 +130,29 @@
       />
     </div>
     <div class="flex w-full flex-col gap-2">
-      <label for="content" class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 flex justify-between"><span>Content</span><input type="checkbox" bind:checked={noteModalState.isPreview}/></label>
+      <div class="flex items-center justify-between gap-3">
+        <label
+          for="content"
+          class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
+          >Content</label
+        >
+        <label
+          for={notePreviewToggleId}
+          class="flex items-center gap-2 rounded-full border border-slate-700/70 bg-slate-900/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-400"
+        >
+          Preview
+          <span class="relative inline-flex items-center">
+            <input
+              id={notePreviewToggleId}
+              type="checkbox"
+              bind:checked={noteModalState.isPreview}
+              class="peer sr-only"
+            />
+            <span class="block h-5 w-9 rounded-full border border-slate-700 bg-slate-800 transition peer-checked:border-slate-200 peer-checked:bg-slate-200"></span>
+            <span class="absolute left-0.5 top-0.5 block h-4 w-4 rounded-full bg-white transition peer-checked:translate-x-4"></span>
+          </span>
+        </label>
+      </div>
       <MDInput
         isPreview={noteModalState.isPreview}
         bind:value={noteModalState.fields.content}
