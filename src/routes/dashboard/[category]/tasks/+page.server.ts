@@ -2,7 +2,7 @@ import { error, fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import { categories, tasks } from "$lib/server/db/schema";
-import { asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql, like, lt, or, isNull } from "drizzle-orm";
 import dayjs from "dayjs";
 
 const resolveCategory = async (categoryName: string) => {
@@ -11,16 +11,29 @@ const resolveCategory = async (categoryName: string) => {
   return record;
 };
 
-const loadTasks = async (categoryId: string) =>
-  db
+const loadTasks = async (categoryId: string, { q, onlyTodo, interval }: { q?: string, onlyTodo?: boolean, interval?: number }) => {
+  const whereClause = and(
+    eq(tasks.categoryId, categoryId),
+    q ? like(tasks.name, `%${q}%`) : undefined,
+    onlyTodo ? eq(tasks.status, false) : undefined,
+    interval ? or(lt(tasks.due, new Date(Date.now() + (interval * 24 * 60 * 60 * 1000))),isNull(tasks.due)) : undefined,
+  )
+
+  return db
     .select()
     .from(tasks)
-    .where(eq(tasks.categoryId, categoryId))
+    .where(whereClause)
     .orderBy(asc(tasks.status), sql`CASE WHEN ${tasks.due} IS NULL THEN 1 ELSE 0 END`, asc(tasks.due));
+}
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, url }) => {
   const { id } = await resolveCategory(params.category);
-  const queryTasks = await loadTasks(id);
+  const q = url.searchParams.get("q") ?? ""
+  const onlyTodo = url.searchParams.get("onlyTodo") ? true : false
+  const interval = Number(url.searchParams.get("interval"))
+
+  const qParams = { q, onlyTodo, interval }
+  const queryTasks = await loadTasks(id, qParams);
 
   return {
     tasks: queryTasks
