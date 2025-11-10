@@ -77,7 +77,8 @@
     if (filters.showOnlyTodo) url.searchParams.set("onlyTodo", "true");
     else url.searchParams.delete("onlyTodo");
 
-    if (filters.intervalValue) url.searchParams.set("interval", filters.intervalValue);
+    if (filters.intervalValue)
+      url.searchParams.set("interval", filters.intervalValue);
     else url.searchParams.delete("interval");
     goto(url.toString(), { keepFocus: true, noScroll: true });
   }
@@ -106,6 +107,8 @@
     taskModalState.fields.content = task.content;
     taskModalState.isOpen = true;
   }
+
+  let md = $state("");
 </script>
 
 <section class="space-y-6">
@@ -128,7 +131,10 @@
     class="grid gap-4 rounded-3xl border border-slate-800/70 bg-slate-900 p-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(0,0.9fr)]"
   >
     <label class="flex flex-col gap-2">
-      <span class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Search</span>
+      <span
+        class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
+        >Search</span
+      >
       <input
         type="search"
         name="q"
@@ -140,8 +146,13 @@
     </label>
 
     <label class="flex flex-col gap-2">
-      <span class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Status</span>
-      <span class="flex items-center justify-between rounded-2xl border border-slate-800/70 bg-slate-950 px-4 py-2 text-sm font-semibold text-slate-200">
+      <span
+        class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
+        >Status</span
+      >
+      <span
+        class="flex items-center justify-between rounded-2xl border border-slate-800/70 bg-slate-950 px-4 py-2 text-sm font-semibold text-slate-200"
+      >
         Only open tasks
         <span class="relative inline-flex items-center">
           <input
@@ -151,14 +162,21 @@
             onchange={reloadData}
             class="peer sr-only"
           />
-          <span class="block h-6 w-11 rounded-full bg-slate-700 transition peer-checked:bg-slate-100"></span>
-          <span class="absolute left-1 top-1 block h-4 w-4 rounded-full bg-white transition peer-checked:translate-x-5"></span>
+          <span
+            class="block h-6 w-11 rounded-full bg-slate-700 transition peer-checked:bg-slate-100"
+          ></span>
+          <span
+            class="absolute left-1 top-1 block h-4 w-4 rounded-full bg-white transition peer-checked:translate-x-5"
+          ></span>
         </span>
       </span>
     </label>
 
     <label class="flex flex-col gap-2">
-      <span class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Due within</span>
+      <span
+        class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
+        >Due within</span
+      >
       <select
         name="interval"
         bind:value={filters.intervalValue}
