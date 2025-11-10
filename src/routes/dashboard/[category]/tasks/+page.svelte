@@ -228,7 +228,7 @@
         bind:value={taskModalState.fields.content}
         name="content"
         placeholder="Add context, links, or checklists..."
-        class="min-h-32 rounded-2xl border border-slate-800/70 bg-slate-900/70 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+        class="min-h-[20vh] h-[30vh] max-h-[40vh] rounded-2xl border border-slate-800/70 bg-slate-900/70 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
       ></textarea>
     </div>
     <div class="flex flex-wrap items-center justify-between gap-3">

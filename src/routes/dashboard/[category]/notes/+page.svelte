@@ -135,7 +135,7 @@
         bind:value={noteModalState.fields.content}
         name="content"
         placeholder="Collect highlights, meeting notes, or brainstorms..."
-        class="min-h-40 max-h-[50vh] rounded-2xl border border-slate-800/70 bg-slate-900/70 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+        class="min-h-[30vh] h-[50vh] max-h-[70vh] rounded-2xl border border-slate-800/70 bg-slate-900/70 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
       ></textarea>
     </div>
     <div class="flex flex-wrap items-center justify-between gap-3">
