@@ -3,11 +3,26 @@
   import Modal from "$lib/components/Modal.svelte";
   import type { PageProps } from "./$types";
   import dayjs from "dayjs";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
 
   let { data }: PageProps = $props();
 
   const { tasks } = $derived(data);
   type Task = (typeof data.tasks)[number];
+  const filters = $derived({
+    searchQuery: data.filters?.q ?? "",
+    showOnlyTodo: data.filters?.onlyTodo ?? false,
+    intervalValue: data.filters?.interval ? String(data.filters.interval) : "",
+  });
+
+  const intervalOptions = [
+    { label: "Today", value: "1" },
+    { label: "Next 3 days", value: "3" },
+    { label: "Next week", value: "7" },
+    { label: "Next 2 weeks", value: "14" },
+    { label: "Next month", value: "30" },
+  ] as const;
 
   let taskModalState: {
     isOpen: boolean;
@@ -53,6 +68,14 @@
     taskModalState.isOpen = false;
   }
 
+  async function reloadData() {
+    const url = new URL(page.url);
+    url.searchParams.set("q", filters.searchQuery);
+    url.searchParams.set("onlyTodo", filters.showOnlyTodo);
+    url.searchParams.set("interval", filters.intervalValue);
+    goto(url.toString(), { keepFocus: true, noScroll: true });
+  }
+
   const taskActions = {
     create: "?/createTask",
     update: "?/updateTask",
@@ -93,6 +116,67 @@
       Add Task
     </button>
   </div>
+
+  <form
+    method="GET"
+    class="grid gap-3 rounded-3xl border border-slate-800/70 bg-slate-950/40 p-4 md:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
+  >
+    <label class="flex flex-col gap-2">
+      <span
+        class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
+        >Search</span
+      >
+      <input
+        type="search"
+        name="q"
+        bind:value={filters.searchQuery}
+        oninput={reloadData}
+        placeholder="Find tasks"
+        class="rounded-2xl border border-slate-800/70 bg-slate-900/70 px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+      />
+    </label>
+
+    <label
+      class="flex h-full items-center justify-center gap-3 rounded-2xl border border-slate-800/70 bg-slate-900/60 px-4 py-2 text-sm font-semibold text-slate-200"
+    >
+      <span
+        class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
+        >Todo only</span
+      >
+      <input
+        type="checkbox"
+        name="onlyTodo"
+        bind:checked={filters.showOnlyTodo}
+        onchange={reloadData}
+        class="size-5 rounded border-slate-700/70 bg-slate-900 accent-indigo-500"
+      />
+    </label>
+
+    <label class="flex flex-col gap-2">
+      <span
+        class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
+        >Due within</span
+      >
+      <select
+        name="interval"
+        bind:value={filters.intervalValue}
+        onchange={reloadData}
+        class="rounded-2xl border border-slate-800/70 bg-slate-900/70 px-4 py-2.5 text-sm text-white focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+      >
+        <option value="">Any time</option>
+        {#each intervalOptions as option}
+          <option value={option.value}>{option.label}</option>
+        {/each}
+      </select>
+    </label>
+
+    <button
+      type="submit"
+      class="self-end rounded-2xl bg-gradient-to-r from-slate-700 to-slate-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-black/30 transition hover:opacity-90"
+    >
+      Apply
+    </button>
+  </form>
 
   <ul class="space-y-3">
     {#if tasks.length === 0}

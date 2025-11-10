@@ -16,7 +16,7 @@ const loadTasks = async (categoryId: string, { q, onlyTodo, interval }: { q?: st
     eq(tasks.categoryId, categoryId),
     q ? like(tasks.name, `%${q}%`) : undefined,
     onlyTodo ? eq(tasks.status, false) : undefined,
-    interval ? or(lt(tasks.due, new Date(Date.now() + (interval * 24 * 60 * 60 * 1000))),isNull(tasks.due)) : undefined,
+    interval ? or(lt(tasks.due, new Date(Date.now() + (interval * 24 * 60 * 60 * 1000))), isNull(tasks.due)) : undefined,
   )
 
   return db
@@ -29,14 +29,20 @@ const loadTasks = async (categoryId: string, { q, onlyTodo, interval }: { q?: st
 export const load: PageServerLoad = async ({ params, url }) => {
   const { id } = await resolveCategory(params.category);
   const q = url.searchParams.get("q") ?? ""
-  const onlyTodo = url.searchParams.get("onlyTodo") ? true : false
-  const interval = Number(url.searchParams.get("interval"))
+  const onlyTodo = url.searchParams.get("onlyTodo") === "true"
+  const rawInterval = url.searchParams.get("interval")
+  const parsedInterval = rawInterval ? Number(rawInterval) : undefined
+  const interval =
+    typeof parsedInterval === "number" && Number.isFinite(parsedInterval) && parsedInterval > 0
+      ? parsedInterval
+      : undefined
 
   const qParams = { q, onlyTodo, interval }
   const queryTasks = await loadTasks(id, qParams);
 
   return {
-    tasks: queryTasks
+    tasks: queryTasks,
+    filters: qParams
   };
 };
 
