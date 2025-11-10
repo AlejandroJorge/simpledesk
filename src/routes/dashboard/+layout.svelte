@@ -8,6 +8,7 @@
   let { children, data, params }: LayoutProps = $props();
   const { categories } = $derived(data);
   let activeCategory = $derived(params.category);
+  const hasSelectedCategory = $derived(Boolean(params.category));
   let isMobileSidebarOpen = $state(false);
 
   let isDeleteCategoryModalOpen = $state(false);
@@ -175,11 +176,13 @@
           </svg>
           Open sidebar
         </button>
-        <div
-          class="rounded-3xl border border-slate-800/60 bg-slate-900 p-6 shadow-[0_10px_40px_rgba(2,6,23,0.6)]"
-        >
-          {@render children()}
-        </div>
+        {#if hasSelectedCategory}
+          <div
+            class="rounded-3xl border border-slate-800/60 bg-slate-900 p-6 shadow-[0_10px_40px_rgba(2,6,23,0.6)]"
+          >
+            {@render children()}
+          </div>
+        {/if}
       </div>
     </main>
   </div>
