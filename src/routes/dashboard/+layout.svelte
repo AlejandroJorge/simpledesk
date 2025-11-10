@@ -4,8 +4,7 @@
 
   let { children, data, params }: LayoutProps = $props();
   const { categories } = data;
-
-  const activeCategory = params.category;
+  let activeCategory = $derived(params.category);
 
   let isDeleteCategoryModalOpen = $state(false);
   let deleteCategoryId = $state("");
@@ -18,21 +17,31 @@
       class="hidden w-72 flex-col border-r border-slate-800/70 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950/40 p-6 lg:flex"
     >
       <div class="mb-8">
-        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Spaces</p>
+        <p
+          class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500"
+        >
+          Spaces
+        </p>
         <h1 class="text-2xl font-semibold text-white">Organize</h1>
-        <p class="text-sm text-slate-400">Switch between categories to manage tasks and notes.</p>
+        <p class="text-sm text-slate-400">
+          Switch between categories to manage tasks and notes.
+        </p>
       </div>
 
       <nav class="flex-1 space-y-1 overflow-y-auto pr-2">
         {#if categories.length === 0}
-          <p class="rounded-lg border border-dashed border-slate-800 px-4 py-3 text-sm text-slate-400">
+          <p
+            class="rounded-lg border border-dashed border-slate-800 px-4 py-3 text-sm text-slate-400"
+          >
             Create your first category to get started.
           </p>
         {:else}
           {#each categories as category}
             <div
               class={`group flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition hover:bg-slate-800/60 ${
-                activeCategory === category.name ? "bg-slate-800/70 text-white" : "text-slate-300"
+                activeCategory === category.name
+                  ? "bg-slate-800/70 text-white"
+                  : "text-slate-300"
               }`}
             >
               <a class="flex-1" href={`/dashboard/${category.name}`}>
@@ -60,7 +69,11 @@
         action="/dashboard?/createCategory"
         method="POST"
       >
-        <label for="categoryName" class="text-xs uppercase tracking-[0.2em] text-slate-500">New Category</label>
+        <label
+          for="categoryName"
+          class="text-xs uppercase tracking-[0.2em] text-slate-500"
+          >New Category</label
+        >
         <div class="flex gap-3">
           <input
             class="w-full rounded-xl border border-slate-700/70 bg-slate-950/60 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
@@ -82,7 +95,9 @@
 
     <main class="flex-1">
       <div class="flex flex-col gap-6 p-6 lg:p-10">
-        <div class="rounded-3xl border border-slate-800/60 bg-slate-900/70 p-6 shadow-2xl shadow-black/40">
+        <div
+          class="rounded-3xl border border-slate-800/60 bg-slate-900/70 p-6 shadow-2xl shadow-black/40"
+        >
           {@render children()}
         </div>
       </div>
@@ -98,11 +113,17 @@
   >
     <input hidden type="text" name="id" value={deleteCategoryId} />
     <div>
-      <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Delete category</p>
-      <p class="mt-2 text-lg font-semibold text-white">
-        {deleteCategoryName ? `Remove "${deleteCategoryName}"?` : "Remove this category?"}
+      <p class="text-sm uppercase tracking-[0.3em] text-slate-500">
+        Delete category
       </p>
-      <p class="text-sm text-slate-400">Only empty categories can be removed. This action cannot be undone.</p>
+      <p class="mt-2 text-lg font-semibold text-white">
+        {deleteCategoryName
+          ? `Remove "${deleteCategoryName}"?`
+          : "Remove this category?"}
+      </p>
+      <p class="text-sm text-slate-400">
+        Only empty categories can be removed. This action cannot be undone.
+      </p>
     </div>
     <div class="flex w-full justify-end gap-3">
       <button
