@@ -4,7 +4,7 @@
   import MDInput from "$lib/components/MDInput.svelte";
   import CheckToggle from "$lib/components/CheckToggle.svelte";
   import type { PageProps } from "./$types";
-  import dayjs from "dayjs";
+  import dayjs from "$lib/dayjs";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
 
@@ -232,9 +232,9 @@
               <div class="text-right text-xs text-slate-500">
                 {#if task.due}
                   <p class="font-semibold text-slate-300">
-                    {dayjs(task.due).format("MMM D")}
+                    {dayjs.utc(task.due).format("MMM D")}
                   </p>
-                  <p>{dayjs(task.due).format("YYYY")}</p>
+                  <p>{dayjs.utc(task.due).format("YYYY")}</p>
                 {/if}
                 <span
                   class={`mt-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${task.status ? "border-emerald-400/60 text-emerald-300" : "border-slate-700 text-slate-300"}`}
@@ -292,11 +292,11 @@
         bind:value={
           () =>
             taskModalState.fields.due
-              ? dayjs(taskModalState.fields.due).format("YYYY-MM-DD")
+              ? dayjs.utc(taskModalState.fields.due).format("YYYY-MM-DD")
               : "",
           (v) =>
             (taskModalState.fields.due = v
-              ? dayjs(v, "YYYY-MM-DD").toDate()
+              ? dayjs.utc(v, "YYYY-MM-DD").toDate()
               : null)
         }
         name="due"

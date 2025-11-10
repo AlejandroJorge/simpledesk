@@ -3,7 +3,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import { categories, tasks } from "$lib/server/db/schema";
 import { and, asc, eq, sql, like, lt, or, isNull } from "drizzle-orm";
-import dayjs from "dayjs";
+import dayjs from "$lib/dayjs";
 
 const resolveCategory = async (categoryName: string) => {
   const [record] = await db.select().from(categories).where(eq(categories.name, categoryName)).limit(1);
@@ -53,7 +53,7 @@ export const actions = {
     if (!name) return fail(400, { name, missing: true });
 
     const dueInput = (data.get("due") as string) ?? "";
-    const due = dueInput ? dayjs(dueInput as string).toDate() : null;
+    const due = dueInput ? dayjs.utc(dueInput as string, "YYYY-MM-DD").toDate() : null;
     const content = (data.get("content") as string) ?? null;
     const status = data.get("status") ? true : false;
 
@@ -73,7 +73,7 @@ export const actions = {
     if (!name) return fail(400, { name, missing: true });
 
     const dueInput = (data.get("due") as string) ?? "";
-    const due = dueInput ? dayjs(dueInput as string).toDate() : null;
+    const due = dueInput ? dayjs.utc(dueInput as string, "YYYY-MM-DD").toDate() : null;
     const content = (data.get("content") as string) ?? null;
     const status = data.get("status") ? true : false;
 
