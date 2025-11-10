@@ -1,6 +1,7 @@
 <script lang="ts">
   import { invalidateAll } from "$app/navigation";
   import Modal from "$lib/components/Modal.svelte";
+  import CheckToggle from "$lib/components/CheckToggle.svelte";
   import type { PageProps } from "./$types";
   import dayjs from "dayjs";
   import { goto } from "$app/navigation";
@@ -184,17 +185,13 @@
         <li
           class="flex items-start gap-4 rounded-2xl border border-slate-800/70 bg-slate-950/40 px-4 py-4"
         >
-          <input
-            id={task.id}
-            onchange={(event) =>
-              updateTaskStatus(
-                task.id,
-                (event.currentTarget as HTMLInputElement).checked,
-              )}
-            type="checkbox"
-            checked={task.status}
-            class="mt-1 size-5 rounded border-slate-700/70 bg-slate-900/80 accent-indigo-500"
-          />
+          <div class="mt-1">
+            <CheckToggle
+              checked={task.status}
+              label={`Mark ${task.name} as ${task.status ? "pending" : "done"}`}
+              onchange={(event) => updateTaskStatus(task.id, event.checked)}
+            />
+          </div>
           <button
             class="flex-1 text-left"
             onclick={() => openUpdateTaskModal(task)}
