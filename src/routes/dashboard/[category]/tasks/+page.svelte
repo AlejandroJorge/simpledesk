@@ -11,6 +11,7 @@
   let { data }: PageProps = $props();
 
   const { tasks } = $derived(data);
+  const pagination = $derived(data.pagination);
   type Task = (typeof data.tasks)[number];
   const filters = $state({
     searchQuery: data.filters?.q ?? "",
@@ -75,8 +76,7 @@
     taskModalState.isOpen = false;
   }
 
-  async function reloadData() {
-    const url = new URL(page.url);
+  function applyFiltersToUrl(url: URL) {
     if (filters.searchQuery) url.searchParams.set("q", filters.searchQuery);
     else url.searchParams.delete("q");
 
@@ -86,7 +86,25 @@
     if (filters.intervalValue)
       url.searchParams.set("interval", filters.intervalValue);
     else url.searchParams.delete("interval");
-    goto(url.toString(), { keepFocus: true, noScroll: true });
+  }
+
+  async function reloadData() {
+    const url = new URL(page.url);
+    applyFiltersToUrl(url);
+    url.searchParams.delete("page");
+    await goto(url.toString(), { keepFocus: true, noScroll: true });
+  }
+
+  async function changePage(nextPage: number) {
+    if (!pagination)
+      return;
+    const clamped = Math.min(Math.max(1, nextPage), pagination.totalPages);
+    if (clamped === pagination.page)
+      return;
+    const url = new URL(page.url);
+    applyFiltersToUrl(url);
+    url.searchParams.set("page", String(clamped));
+    await goto(url.toString(), { keepFocus: true, noScroll: true });
   }
 
   const taskActions = {
@@ -146,7 +164,7 @@
   }
 </script>
 
-<section class="space-y-6">
+<section class="flex min-h-0 flex-col space-y-6">
   <header class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex items-center gap-3 text-sm text-slate-500">
       <h2 class="text-xl font-semibold text-white tracking-tight">Tasks</h2>
@@ -224,12 +242,38 @@
     </label>
   </form>
 
-  <TaskList
-    tasks={tasks}
-    emptyMessage="No tasks yet. Add your first one."
-    onToggle={(task, nextValue) => updateTaskStatus(task.id, nextValue)}
-    onSelect={openUpdateTaskModal}
-  />
+  <div class="flex-1 min-h-0 overflow-y-auto pr-1">
+    <TaskList
+      tasks={tasks}
+      emptyMessage="No tasks yet. Add your first one."
+      onToggle={(task, nextValue) => updateTaskStatus(task.id, nextValue)}
+      onSelect={openUpdateTaskModal}
+    />
+  </div>
+
+  {#if pagination && pagination.totalPages > 1}
+    <nav class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/5 bg-[#080b14] px-4 py-3 text-sm text-slate-300">
+      <button
+        type="button"
+        class="inline-flex items-center rounded-xl border border-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] transition hover:border-white/30 disabled:opacity-50 disabled:hover:border-white/10"
+        onclick={() => changePage(pagination.page - 1)}
+        disabled={pagination.page <= 1}
+      >
+        Previous
+      </button>
+      <p class="text-xs uppercase tracking-[0.3em] text-slate-400">
+        Page {pagination.page} of {pagination.totalPages} · {pagination.total} tasks
+      </p>
+      <button
+        type="button"
+        class="inline-flex items-center rounded-xl border border-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] transition hover:border-white/30 disabled:opacity-50 disabled:hover:border-white/10"
+        onclick={() => changePage(pagination.page + 1)}
+        disabled={pagination.page >= pagination.totalPages}
+      >
+        Next
+      </button>
+    </nav>
+  {/if}
 </section>
 
 <Modal bind:isOpen={taskModalState.isOpen} onCloseRequest={handleTaskModalCloseRequest}>

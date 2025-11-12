@@ -190,7 +190,7 @@
   }
 </script>
 
-<section class="space-y-6">
+<section class="flex min-h-0 flex-col space-y-6">
   <header class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex items-center gap-3 text-sm text-slate-500">
       <h2 class="text-xl font-semibold text-white tracking-tight">Notes</h2>
@@ -212,28 +212,30 @@
       No notes yet. Add context to your work.
     </div>
   {:else}
-    <div class="columns-1 gap-4 space-y-4 sm:columns-2 xl:columns-3">
-      {#each orderedNotes as note, index (note.id)}
-        <button
-          type="button"
-          class={`w-full min-h-24 break-inside-avoid cursor-pointer rounded-2xl border border-white/5 ${noteAccentPalette[index % noteAccentPalette.length]} p-4 text-left shadow-[0_25px_60px_rgba(3,4,12,0.55)] transition hover:-translate-y-1 hover:border-white/20 ${
-            dragState.id === note.id ? "opacity-60" : ""
-          }`}
-          draggable="true"
-          aria-grabbed={dragState.id === note.id}
-          ondragstart={() => handleDragStart(note.id)}
-          ondragover={(event) => handleDragOver(event, note.id)}
-          ondrop={handleDrop}
-          ondragend={handleDragEnd}
-          onclick={() => handleNoteClick(note)}
-        >
-          <span class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Note</span>
-          <h3 class="mb-2 mt-2 line-clamp-1 text-base font-semibold text-white">{note.name}</h3>
-          <p class="text-sm text-slate-300" class:line-clamp-6={note.content?.length && note.content.length > 280}>
-            {note.content}
-          </p>
-        </button>
-      {/each}
+    <div class="flex-1 min-h-0 overflow-y-auto pr-1">
+      <div class="columns-1 gap-4 space-y-4 sm:columns-2 xl:columns-3">
+        {#each orderedNotes as note, index (note.id)}
+          <button
+            type="button"
+            class={`w-full min-h-24 break-inside-avoid cursor-pointer rounded-2xl border border-white/5 ${noteAccentPalette[index % noteAccentPalette.length]} p-4 text-left shadow-[0_25px_60px_rgba(3,4,12,0.55)] transition hover:-translate-y-1 hover:border-white/20 ${
+              dragState.id === note.id ? "opacity-60" : ""
+            }`}
+            draggable="true"
+            aria-grabbed={dragState.id === note.id}
+            ondragstart={() => handleDragStart(note.id)}
+            ondragover={(event) => handleDragOver(event, note.id)}
+            ondrop={handleDrop}
+            ondragend={handleDragEnd}
+            onclick={() => handleNoteClick(note)}
+          >
+            <span class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Note</span>
+            <h3 class="mb-2 mt-2 line-clamp-1 text-base font-semibold text-white">{note.name}</h3>
+            <p class="text-sm text-slate-300" class:line-clamp-6={note.content?.length && note.content.length > 280}>
+              {note.content}
+            </p>
+          </button>
+        {/each}
+      </div>
     </div>
   {/if}
 </section>

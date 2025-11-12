@@ -167,8 +167,8 @@
       {/if}
     </aside>
 
-    <main class="flex-1">
-      <div class="flex flex-col gap-4 p-4 lg:p-8">
+    <main class="flex-1 min-h-0">
+      <div class="flex h-full min-h-0 flex-col gap-4 p-4 lg:p-8">
         <button
           class="inline-flex cursor-pointer items-center gap-2 self-start rounded-2xl border border-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-300 transition hover:text-white lg:hidden"
           type="button"
@@ -193,7 +193,7 @@
           Menu
         </button>
         <div
-          class="rounded-2xl border border-white/5 bg-[#080b14] p-5 shadow-[0_25px_75px_rgba(3,4,12,0.75)]"
+          class="flex h-full min-h-0 flex-col rounded-2xl border border-white/5 bg-[#080b14] p-5 shadow-[0_25px_75px_rgba(3,4,12,0.75)]"
         >
           {@render children()}
         </div>

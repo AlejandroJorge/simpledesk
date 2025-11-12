@@ -2,7 +2,7 @@ import { error, fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import { categories, tasks } from "$lib/server/db/schema";
-import { and, asc, eq, sql, like, lt, or, isNull } from "drizzle-orm";
+import { and, asc, eq, sql, like, lt, or, isNull, count } from "drizzle-orm";
 import dayjs from "$lib/dayjs";
 
 const resolveCategory = async (categoryId: string) => {
@@ -11,20 +11,39 @@ const resolveCategory = async (categoryId: string) => {
   return record;
 };
 
-const loadTasks = async (categoryId: string, { q, onlyTodo, interval }: { q?: string, onlyTodo?: boolean, interval?: number }) => {
-  const whereClause = and(
+const TASKS_PER_PAGE = 25;
+
+type TaskFilters = { q?: string; onlyTodo?: boolean; interval?: number };
+
+const buildTaskWhereClause = (categoryId: string, { q, onlyTodo, interval }: TaskFilters) =>
+  and(
     eq(tasks.categoryId, categoryId),
     q ? like(tasks.name, `%${q}%`) : undefined,
     onlyTodo ? eq(tasks.status, false) : undefined,
     interval ? or(lt(tasks.due, new Date(Date.now() + (interval * 24 * 60 * 60 * 1000))), isNull(tasks.due)) : undefined,
-  )
+  );
+
+const loadTasks = async (
+  categoryId: string,
+  filters: TaskFilters,
+  { limit, offset }: { limit: number; offset: number }
+) => {
+  const whereClause = buildTaskWhereClause(categoryId, filters);
 
   return db
     .select()
     .from(tasks)
     .where(whereClause)
-    .orderBy(asc(tasks.status), sql`CASE WHEN ${tasks.due} IS NULL THEN 1 ELSE 0 END`, asc(tasks.due));
-}
+    .orderBy(asc(tasks.status), sql`CASE WHEN ${tasks.due} IS NULL THEN 1 ELSE 0 END`, asc(tasks.due))
+    .limit(limit)
+    .offset(offset);
+};
+
+const countTasks = async (categoryId: string, filters: TaskFilters) => {
+  const whereClause = buildTaskWhereClause(categoryId, filters);
+  const [{ value }] = await db.select({ value: count() }).from(tasks).where(whereClause);
+  return value ?? 0;
+};
 
 export const load: PageServerLoad = async ({ params, url }) => {
   const { id } = await resolveCategory(params.category);
@@ -36,13 +55,28 @@ export const load: PageServerLoad = async ({ params, url }) => {
     typeof parsedInterval === "number" && Number.isFinite(parsedInterval) && parsedInterval > 0
       ? parsedInterval
       : undefined
+  const rawPage = url.searchParams.get("page")
+  const parsedPage = rawPage ? Number(rawPage) : NaN
+  let page = Number.isFinite(parsedPage) && parsedPage > 0 ? Math.floor(parsedPage) : 1
 
   const qParams = { q, onlyTodo, interval }
-  const queryTasks = await loadTasks(id, qParams);
+  const totalTasks = await countTasks(id, qParams)
+  const totalPages = Math.max(1, Math.ceil(totalTasks / TASKS_PER_PAGE))
+  if (page > totalPages)
+    page = totalPages
+
+  const offset = (page - 1) * TASKS_PER_PAGE
+  const queryTasks = await loadTasks(id, qParams, { limit: TASKS_PER_PAGE, offset });
 
   return {
     tasks: queryTasks,
-    filters: qParams
+    filters: qParams,
+    pagination: {
+      page,
+      pageSize: TASKS_PER_PAGE,
+      total: totalTasks,
+      totalPages,
+    }
   };
 };
 
