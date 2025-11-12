@@ -216,8 +216,8 @@
             class="flex-1 cursor-pointer text-left"
             onclick={() => openUpdateTaskModal(task)}
           >
-            <div class="flex items-start justify-between gap-4">
-              <div>
+            <div class="flex items-start gap-4">
+              <div class="flex-1 min-w-0">
                 <p
                   class={`text-base font-semibold text-slate-100 ${task.status ? "line-through text-slate-500" : ""}`}
                 >
@@ -227,19 +227,11 @@
                   {task.content}
                 </p>
               </div>
-              <div class="text-right text-xs text-slate-500">
-                {#if task.due}
-                  <p class="font-semibold text-slate-300">
-                    {dayjs.utc(task.due).format("MMM D")}
-                  </p>
-                  <p>{dayjs.utc(task.due).format("YYYY")}</p>
-                {/if}
-                <span
-                  class={`mt-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${task.status ? "border-emerald-300/70 text-emerald-200" : "border-white/10 text-slate-400"}`}
-                >
-                  {task.status ? "Done" : "Pending"}
-                </span>
-              </div>
+              {#if task.due}
+                <p class="ml-auto text-right text-xs font-semibold text-slate-300 whitespace-nowrap">
+                  {dayjs.utc(task.due).format("dddd D, MMM YYYY")}
+                </p>
+              {/if}
             </div>
           </button>
         </li>
@@ -263,24 +255,23 @@
         {taskModalState.mode === "create" ? "New task" : "Update task"}
       </h3>
     </div>
-    <div class="grid gap-4 md:grid-cols-[auto,1fr]">
-      <div class="flex flex-col gap-2">
-        <label
-          for="name"
-          class="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500"
-          >Task name</label
-        >
-        <input
-          bind:value={taskModalState.fields.name}
-          name="name"
-          type="text"
-          required
-          placeholder="Ship onboarding flow"
-          class="rounded-2xl border border-white/10 bg-[#05070f] px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-white/30 focus:outline-none"
-        />
-      </div>
+  <div class="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+    <div class="flex flex-col gap-2">
+      <label
+        for="name"
+        class="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500"
+        >Task name</label
+      >
+      <input
+        bind:value={taskModalState.fields.name}
+        name="name"
+        type="text"
+        required
+        placeholder="Ship onboarding flow"
+        class="rounded-2xl border border-white/10 bg-[#05070f] px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-white/30 focus:outline-none"
+      />
     </div>
-    <div class="flex w-full flex-col gap-2">
+    <div class="flex flex-col gap-2">
       <label
         for="due"
         class="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500"
@@ -302,6 +293,7 @@
         class="rounded-2xl border border-white/10 bg-[#05070f] px-4 py-3 text-sm text-white focus:border-white/30 focus:outline-none"
       />
     </div>
+  </div>
     <div class="flex w-full flex-col gap-2">
       <div class="flex items-center justify-between gap-3">
         <label
