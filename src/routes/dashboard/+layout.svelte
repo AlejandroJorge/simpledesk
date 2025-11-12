@@ -8,6 +8,7 @@
   let { children, data, params }: LayoutProps = $props();
   const { categories } = $derived(data);
   const activeCategoryId = $derived('category' in params ? params.category : null);
+  const auth = $derived(data.auth);
   let isMobileSidebarOpen = $state(false);
 
   let isCreateCategoryModalOpen = $state(false);
@@ -154,6 +155,16 @@
           New Category
         </button>
       </div>
+      {#if auth?.enabled}
+        <form method="POST" action="/logout" class="mt-3">
+          <button
+            type="submit"
+            class="w-full rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-white/30"
+          >
+            Logout
+          </button>
+        </form>
+      {/if}
     </aside>
 
     <main class="flex-1">
