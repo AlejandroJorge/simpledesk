@@ -2,9 +2,9 @@
   import { invalidateAll } from "$app/navigation";
   import Modal from "$lib/components/Modal.svelte";
   import MDInput from "$lib/components/MDInput.svelte";
-  import CheckToggle from "$lib/components/CheckToggle.svelte";
-  import type { PageProps } from "./$types";
+  import TaskList from "$lib/components/TaskList.svelte";
   import dayjs from "$lib/dayjs";
+  import type { PageProps } from "./$types";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
 
@@ -12,7 +12,7 @@
 
   const { tasks } = $derived(data);
   type Task = (typeof data.tasks)[number];
-  const filters = $derived({
+  const filters = $state({
     searchQuery: data.filters?.q ?? "",
     showOnlyTodo: data.filters?.onlyTodo ?? false,
     intervalValue: data.filters?.interval ? String(data.filters.interval) : "",
@@ -224,51 +224,12 @@
     </label>
   </form>
 
-  <ul class="space-y-2.5">
-    {#if tasks.length === 0}
-      <li
-        class="rounded-2xl border border-dashed border-white/10 bg-[#080b14]/60 px-4 py-6 text-center text-sm text-slate-500"
-      >
-        No tasks yet. Add your first one.
-      </li>
-    {:else}
-      {#each tasks as task}
-        <li
-          class="flex items-start gap-3 rounded-2xl border border-white/5 bg-[#0b0f1c] px-4 py-4"
-        >
-          <div class="mt-1">
-            <CheckToggle
-              checked={task.status}
-              label={`Mark ${task.name} as ${task.status ? "pending" : "done"}`}
-              onchange={(event) => updateTaskStatus(task.id, event.checked)}
-            />
-          </div>
-          <button
-            class="flex-1 cursor-pointer text-left"
-            onclick={() => openUpdateTaskModal(task)}
-          >
-            <div class="flex items-start gap-4">
-              <div class="flex-1 min-w-0">
-                <p
-                  class={`text-base font-semibold text-slate-100 ${task.status ? "line-through text-slate-500" : ""}`}
-                >
-                  {task.name}
-                </p>
-                <p class="mt-1 line-clamp-2 text-sm text-slate-500">
-                  {task.content}
-                </p>
-              </div>
-              {#if task.due}
-                <p class="ml-auto text-right text-xs font-semibold text-slate-300 whitespace-nowrap">
-                  {dayjs.utc(task.due).format("dddd D, MMM YYYY")}
-                </p>
-              {/if}
-            </div>
-          </button>
-        </li>
-      {/each}
-    {/if}
-  </ul>
+  <TaskList
+    tasks={tasks}
+    emptyMessage="No tasks yet. Add your first one."
+    onToggle={(task, nextValue) => updateTaskStatus(task.id, nextValue)}
+    onSelect={openUpdateTaskModal}
+  />
 </section>
 
 <Modal bind:isOpen={taskModalState.isOpen} onCloseRequest={handleTaskModalCloseRequest}>

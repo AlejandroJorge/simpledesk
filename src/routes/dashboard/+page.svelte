@@ -1,7 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import CheckToggle from "$lib/components/CheckToggle.svelte";
+  import Modal from "$lib/components/Modal.svelte";
+  import TaskList from "$lib/components/TaskList.svelte";
   import type { PageProps } from "./$types";
   import dayjs from "$lib/dayjs";
 
@@ -10,11 +11,21 @@
   type Task = (typeof data.tasks)[number];
   const tasks = $derived(data.tasks);
   const categories = $derived(data.categories);
+  const categoryLookup = $derived(Object.fromEntries(categories.map((category) => [category.id, category.name])));
   const filters = $state({
     searchQuery: data.filters?.q ?? "",
     showOnlyTodo: data.filters?.onlyTodo ?? false,
     intervalValue: data.filters?.interval ? String(data.filters.interval) : "",
   });
+
+  let previewTask = $state<Task | null>(null);
+  let isTaskPreviewOpen = $state(false);
+  const previewCategoryName = $derived(
+    previewTask ? categoryLookup[previewTask.categoryId] ?? "Unknown" : ""
+  );
+  const previewDue = $derived(
+    previewTask?.due ? dayjs.utc(previewTask.due).format("dddd D MMM YYYY") : null
+  );
 
   const intervalOptions = [
     { label: "Today", value: "1" },
@@ -38,13 +49,6 @@
     await goto(url.toString(), { keepFocus: true, noScroll: true });
   }
 
-  function formatDueDate(task: Task) {
-    return task.due ? dayjs.utc(task.due).format("ddd D MMM") : null;
-  }
-
-  function categoryNameFor(task: Task) {
-    return categories.find((category) => category.id === task.categoryId)?.name ?? "Unknown";
-  }
 </script>
 
 <section class="space-y-6">
@@ -111,42 +115,60 @@
     </label>
   </form>
 
-  <ul class="space-y-2.5">
-    {#if tasks.length === 0}
-      <li class="rounded-2xl border border-dashed border-white/10 bg-[#080b14]/60 px-4 py-6 text-center text-sm text-slate-500">
-        No tasks match these filters.
-      </li>
-    {:else}
-      {#each tasks as task}
-        <li class="flex items-start gap-4 rounded-2xl border border-white/5 bg-[#0b0f1c] px-4 py-4">
-          <CheckToggle
-            checked={task.status}
-            label={`Mark ${task.name} as ${task.status ? "pending" : "done"}`}
-            disabled
-          />
-          <div class="flex-1 min-w-0">
-            <div class="flex flex-wrap items-center gap-2">
-              <h3 class={`text-base font-semibold ${task.status ? "text-slate-500 line-through" : "text-white"}`}>
-                {task.name}
-              </h3>
-              <a
-                class="rounded-full border border-white/10 px-2 py-0.5 text-[11px] uppercase tracking-[0.3em] text-slate-400 hover:text-white hover:border-white/30"
-                href={`/dashboard/${task.categoryId}/tasks`}
-              >
-                {categoryNameFor(task)}
-              </a>
-              {#if formatDueDate(task)}
-                <span class="ml-auto text-xs font-semibold text-slate-300">
-                  {formatDueDate(task)}
-                </span>
-              {/if}
-            </div>
-            <p class="mt-1 line-clamp-2 text-sm text-slate-400">
-              {task.content ?? "No details captured yet."}
-            </p>
+  <TaskList
+    tasks={tasks}
+    readOnly
+    showCategoryBadge
+    categoryLookup={categoryLookup}
+    emptyMessage="No tasks match these filters."
+    onSelect={(task) => {
+      previewTask = task;
+      isTaskPreviewOpen = true;
+    }}
+  />
+
+  <Modal bind:isOpen={isTaskPreviewOpen} onCloseRequest={() => {
+    previewTask = null;
+    isTaskPreviewOpen = false;
+    return true;
+  }}>
+    {#if previewTask}
+      <div class="flex flex-col gap-6">
+        <div class="space-y-2">
+          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Task preview</p>
+          <h3 class="text-2xl font-semibold text-white">{previewTask.name}</h3>
+          <div class="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-400">
+            <span class="rounded-full border border-white/10 px-3 py-1">{previewCategoryName}</span>
+            <span class="rounded-full border border-white/10 px-3 py-1">
+              {previewTask.status ? "Completed" : "Open"}
+            </span>
+            {#if previewDue}
+              <span class="rounded-full border border-white/10 px-3 py-1">{previewDue}</span>
+            {/if}
           </div>
-        </li>
-      {/each}
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-[#05070f] p-4 text-sm text-slate-200 min-h-[8rem] whitespace-pre-wrap">
+          {previewTask.content ?? "No details captured yet."}
+        </div>
+        <div class="flex justify-end gap-3">
+          <a
+            class="rounded-xl border border-white/15 px-4 py-2 text-sm font-semibold text-white/90 hover:border-white/40"
+            href={`/dashboard/${previewTask.categoryId}/tasks`}
+          >
+            Open in category
+          </a>
+          <button
+            type="button"
+            class="rounded-xl bg-[var(--brand,#f1b24a)] px-5 py-2 text-sm font-semibold text-[#05060c]"
+            onclick={() => {
+              isTaskPreviewOpen = false;
+              previewTask = null;
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
     {/if}
-  </ul>
+  </Modal>
 </section>
