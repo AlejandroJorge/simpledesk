@@ -8,6 +8,16 @@
   const { notes } = $derived(data);
   type Note = (typeof data.notes)[number];
 
+  let orderedNotes = $state<Note[]>([]);
+  let dragState = $state<{ id: string | null; fromIndex: number }>({ id: null, fromIndex: -1 });
+  let isDragging = $state(false);
+  let lastPersistedOrder: string[] = [];
+
+  $effect(() => {
+    orderedNotes = [...notes];
+    lastPersistedOrder = notes.map((note) => note.id);
+  });
+
   const noteAccentPalette = ["bg-[#101425]", "bg-[#0d1320]"] as const;
   const notePreviewToggleId = "note-preview-toggle";
 
@@ -65,6 +75,88 @@
     noteModalState.fields.content = note.content;
     noteModalState.isOpen = true;
   }
+
+  function handleDragStart(noteId: string) {
+    dragState.id = noteId;
+    dragState.fromIndex = orderedNotes.findIndex((note) => note.id === noteId);
+    isDragging = true;
+  }
+
+  function handleDragOver(event: DragEvent, targetId: string) {
+    event.preventDefault();
+    if (!dragState.id || dragState.id === targetId) return;
+    const nextOrder = reorderWithinList(dragState.id, targetId);
+    if (nextOrder)
+      orderedNotes = nextOrder;
+  }
+
+  function handleDrop(event: DragEvent) {
+    event.preventDefault();
+  }
+
+  function handleDragEnd() {
+    if (!dragState.id) {
+      resetDragState();
+      return;
+    }
+
+    const movedNoteId = dragState.id;
+    const positionMovedTo = orderedNotes.findIndex((note) => note.id === movedNoteId);
+    const positionMovedFrom = lastPersistedOrder.indexOf(movedNoteId);
+
+    resetDragState();
+
+    if (positionMovedFrom === -1 || positionMovedTo === -1 || positionMovedFrom === positionMovedTo)
+      return;
+
+    void persistMove(movedNoteId, positionMovedFrom, positionMovedTo);
+  }
+
+  function resetDragState() {
+    dragState = { id: null, fromIndex: -1 };
+    isDragging = false;
+  }
+
+  async function persistMove(movedNoteId: string, positionMovedFrom: number, positionMovedTo: number) {
+    try {
+      const response = await fetch("/api/reorder-notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ movedNoteId, positionMovedFrom, positionMovedTo }),
+      });
+
+      if (!response.ok) throw new Error("Failed to save order");
+
+      lastPersistedOrder = applyMove(lastPersistedOrder, positionMovedFrom, positionMovedTo);
+      invalidateAll();
+    } catch (error) {
+      console.error(error);
+      orderedNotes = [...notes];
+    }
+  }
+
+  function applyMove(order: string[], fromIndex: number, newIndex: number) {
+    const updated = [...order];
+    if (fromIndex < 0 || fromIndex >= updated.length) return updated;
+    const [movedId] = updated.splice(fromIndex, 1);
+    updated.splice(newIndex, 0, movedId);
+    return updated;
+  }
+
+  function reorderWithinList(sourceId: string, targetId: string) {
+    const updated = [...orderedNotes];
+    const fromIndex = updated.findIndex((note) => note.id === sourceId);
+    const toIndex = updated.findIndex((note) => note.id === targetId);
+    if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return null;
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    return updated;
+  }
+
+  function handleNoteClick(note: Note) {
+    if (isDragging) return;
+    openUpdateNoteModal(note);
+  }
 </script>
 
 <section class="space-y-6">
@@ -90,11 +182,19 @@
     </div>
   {:else}
     <div class="columns-1 gap-4 space-y-4 sm:columns-2 xl:columns-3">
-      {#each notes as note, index}
+      {#each orderedNotes as note, index (note.id)}
         <button
           type="button"
-          class={`w-full min-h-24 break-inside-avoid cursor-pointer rounded-2xl border border-white/5 ${noteAccentPalette[index % noteAccentPalette.length]} p-4 text-left shadow-[0_25px_60px_rgba(3,4,12,0.55)] transition hover:-translate-y-1 hover:border-white/20`}
-          onclick={() => openUpdateNoteModal(note)}
+          class={`w-full min-h-24 break-inside-avoid cursor-pointer rounded-2xl border border-white/5 ${noteAccentPalette[index % noteAccentPalette.length]} p-4 text-left shadow-[0_25px_60px_rgba(3,4,12,0.55)] transition hover:-translate-y-1 hover:border-white/20 ${
+            dragState.id === note.id ? "opacity-60" : ""
+          }`}
+          draggable="true"
+          aria-grabbed={dragState.id === note.id}
+          ondragstart={() => handleDragStart(note.id)}
+          ondragover={(event) => handleDragOver(event, note.id)}
+          ondrop={handleDrop}
+          ondragend={handleDragEnd}
+          onclick={() => handleNoteClick(note)}
         >
           <span class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Note</span>
           <h3 class="mb-2 mt-2 line-clamp-1 text-base font-semibold text-white">{note.name}</h3>

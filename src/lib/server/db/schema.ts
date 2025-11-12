@@ -1,10 +1,11 @@
 import { relations } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text, index } from 'drizzle-orm/sqlite-core';
 
 export const categories = sqliteTable('category', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text('name').notNull().unique()
 })
+
 
 export const tasks = sqliteTable('task', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -19,7 +20,8 @@ export const notes = sqliteTable('note',{
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text('name').notNull(),
   content: text('content'),
-  categoryId: text('category_id').notNull()
+  categoryId: text('category_id').notNull(),
+  position: integer('position').notNull().default(0)
 })
 
 export const categoryRelations = relations(categories,({many})=>({

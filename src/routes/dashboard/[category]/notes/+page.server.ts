@@ -2,7 +2,7 @@ import { error, fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import { categories, notes } from "$lib/server/db/schema";
-import { eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 
 const resolveCategory = async (categoryName: string) => {
   const [record] = await db.select().from(categories).where(eq(categories.name, categoryName)).limit(1);
@@ -10,13 +10,19 @@ const resolveCategory = async (categoryName: string) => {
   return record;
 };
 
-const loadNotes = async (categoryId: string) => db.select().from(notes).where(eq(notes.categoryId, categoryId));
+const loadNotes = async (categoryId: string) =>
+  db
+    .select()
+    .from(notes)
+    .where(eq(notes.categoryId, categoryId))
+    .orderBy(asc(notes.position), asc(notes.name));
 
 export const load: PageServerLoad = async ({ params }) => {
-  const { id } = await resolveCategory(params.category);
-  const queryNotes = await loadNotes(id);
+  const category = await resolveCategory(params.category);
+  const queryNotes = await loadNotes(category.id);
 
   return {
+    category,
     notes: queryNotes
   };
 };
@@ -32,7 +38,21 @@ export const actions = {
 
     const { id: categoryId } = await resolveCategory(params.category);
 
-    await db.insert(notes).values({ name, content, categoryId });
+    const [lastNote] = await db
+      .select({ position: notes.position })
+      .from(notes)
+      .where(eq(notes.categoryId, categoryId))
+      .orderBy(desc(notes.position))
+      .limit(1);
+
+    const nextPosition = (lastNote?.position ?? -1) + 1;
+
+    await db.insert(notes).values({ name, content, categoryId, position: nextPosition });
+    console.info("[notes] create", {
+      categoryId,
+      noteName: name,
+      assignedPosition: nextPosition,
+    });
 
     return { success: true };
   },
