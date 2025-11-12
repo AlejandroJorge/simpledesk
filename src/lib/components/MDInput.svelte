@@ -1,14 +1,61 @@
 <script lang="ts">
   import Markdown from "svelte-exmarkdown";
 
-  let { value = $bindable(), isPreview, ...props } = $props();
-  let md = $derived(value);
+  let { value = $bindable<string | null>(null), isPreview = false, ...props } = $props();
+  let textareaEl: HTMLTextAreaElement | null = null;
+  let textValue = $state(value ?? "");
+
+  $effect(() => {
+    const next = value ?? "";
+    if (next !== textValue)
+      textValue = next;
+  });
+
+  function handleInput(event: Event) {
+    textValue = (event.currentTarget as HTMLTextAreaElement).value;
+    value = textValue;
+  }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (
+      event.key !== "Tab" ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.altKey ||
+      event.shiftKey
+    )
+      return;
+
+    event.preventDefault();
+
+    if (!textareaEl)
+      return;
+
+    const start = textareaEl.selectionStart ?? 0;
+    const end = textareaEl.selectionEnd ?? 0;
+    const nextValue = `${textValue.slice(0, start)}\t${textValue.slice(end)}`;
+
+    textValue = nextValue;
+    value = nextValue;
+
+    queueMicrotask(() => {
+      const nextCursor = start + 1;
+      textareaEl?.setSelectionRange(nextCursor, nextCursor);
+    });
+  }
 </script>
 
-<textarea hidden={isPreview} bind:value={md} {...props}></textarea>
+<textarea
+  hidden={isPreview}
+  bind:this={textareaEl}
+  value={textValue}
+  oninput={handleInput}
+  onkeydown={handleKeyDown}
+  {...props}
+></textarea>
 {#if isPreview}
   <div {...props}>
-    <Markdown {md} {...props}>
+    <Markdown md={textValue} {...props}>
       {#snippet h1(props)}
         {@const { children, style, class: className, ...rest } = props}
         <h1 {style} class={className} {...rest}>
