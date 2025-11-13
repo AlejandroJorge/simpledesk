@@ -1,14 +1,18 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
-  import { invalidateAll } from "$app/navigation";
+  import { invalidateAll, goto } from "$app/navigation";
   import MDInput from "$lib/components/MDInput.svelte";
   import Modal from "$lib/components/Modal.svelte";
   import { fetchWithErrorToast, createErrorToastEnhancer } from "$lib/utils/toast-errors";
   import type { PageProps } from "./$types";
+  import { page } from "$app/state";
 
   let { data }: PageProps = $props();
   const { notes } = $derived(data);
   type Note = (typeof data.notes)[number];
+  const filters = $state({
+    searchQuery: data.filters?.q ?? "",
+  });
 
   let orderedNotes = $state<Note[]>([]);
   let dragState = $state<{ id: string | null; fromIndex: number }>({ id: null, fromIndex: -1 });
@@ -20,7 +24,21 @@
   $effect(() => {
     orderedNotes = [...notes];
     lastPersistedOrder = notes.map((note) => note.id);
+    filters.searchQuery = data.filters?.q ?? "";
   });
+
+  function applyFiltersToUrl(url: URL) {
+    if (filters.searchQuery)
+      url.searchParams.set("q", filters.searchQuery);
+    else
+      url.searchParams.delete("q");
+  }
+
+  async function reloadData() {
+    const url = new URL(page.url);
+    applyFiltersToUrl(url);
+    await goto(url.toString(), { keepFocus: true, noScroll: true });
+  }
 
   const noteAccentPalette = ["bg-[#101425]", "bg-[#0d1320]"] as const;
   const notePreviewToggleId = "note-preview-toggle";
@@ -224,6 +242,25 @@
       New Note
     </button>
   </header>
+
+  <form
+    method="GET"
+    class="rounded-2xl border border-white/5 bg-[#080b14] p-4"
+  >
+    <label class="flex flex-col gap-2">
+      <span class="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500">
+        Search
+      </span>
+      <input
+        type="search"
+        name="q"
+        bind:value={filters.searchQuery}
+        oninput={reloadData}
+        placeholder="Find notes by title"
+        class="rounded-2xl border border-white/10 bg-[#05070f] px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-white/30 focus:outline-none"
+      />
+    </label>
+  </form>
 
   {#if notes.length === 0}
     <div class="rounded-2xl border border-dashed border-white/10 bg-[#080b14]/60 px-4 py-6 text-center text-sm text-slate-500">

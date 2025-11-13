@@ -9,7 +9,6 @@
   const { categories } = $derived(data);
   const activeCategoryId = $derived('category' in params ? params.category : null);
   const auth = $derived(data.auth);
-  const workspaceTimezone = $derived(data.workspaceTimezone ?? "UTC");
   let isMobileSidebarOpen = $state(false);
 
   let isCreateCategoryModalOpen = $state(false);
@@ -121,12 +120,6 @@
           {/each}
         {/if}
       </nav>
-
-      <div
-        class="mt-5 rounded-2xl border border-white/10 bg-[#0c101d] p-4 text-slate-400 text-[11px] uppercase tracking-[0.3em]"
-      >
-        Timezone: <span class="text-white font-semibold tracking-[0.2em]">{workspaceTimezone}</span>
-      </div>
 
       <button
         class="mt-5 inline-flex w-full cursor-pointer items-center justify-center rounded-2xl border border-white/10 bg-[var(--brand,#f1b24a)] px-4 py-2 text-sm font-semibold text-[#05060c] transition hover:brightness-110"

@@ -2,7 +2,7 @@ import { error, fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import { categories, notes } from "$lib/server/db/schema";
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, like } from "drizzle-orm";
 
 const resolveCategory = async (categoryId: string) => {
   const [record] = await db.select().from(categories).where(eq(categories.id, categoryId)).limit(1);
@@ -10,20 +10,28 @@ const resolveCategory = async (categoryId: string) => {
   return record;
 };
 
-const loadNotes = async (categoryId: string) =>
-  db
+const loadNotes = async (categoryId: string, search?: string) => {
+  const whereClause = and(
+    eq(notes.categoryId, categoryId),
+    search ? like(notes.name, `%${search}%`) : undefined
+  );
+
+  return db
     .select()
     .from(notes)
-    .where(eq(notes.categoryId, categoryId))
+    .where(whereClause)
     .orderBy(asc(notes.position), asc(notes.name));
+};
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, url }) => {
   const category = await resolveCategory(params.category);
-  const queryNotes = await loadNotes(category.id);
+  const q = url.searchParams.get("q")?.trim() ?? "";
+  const queryNotes = await loadNotes(category.id, q || undefined);
 
   return {
     category,
-    notes: queryNotes
+    notes: queryNotes,
+    filters: { q }
   };
 };
 
