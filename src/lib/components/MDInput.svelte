@@ -1,14 +1,24 @@
 <script lang="ts">
+  import remarkGfm from "remark-gfm";
   import Markdown from "svelte-exmarkdown";
+  import type { Plugin } from "svelte-exmarkdown";
 
-  let { value = $bindable<string | null>(null), isPreview = false, ...props } = $props();
+  const gfmPlugin = (options: {}): Plugin => ({
+    remarkPlugin: [remarkGfm, options],
+  });
+  const plugins: Plugin[] = [gfmPlugin({})];
+
+  let {
+    value = $bindable<string | null>(null),
+    isPreview = false,
+    ...props
+  } = $props();
   let textareaEl: HTMLTextAreaElement | null = null;
   let textValue = $state(value ?? "");
 
   $effect(() => {
     const next = value ?? "";
-    if (next !== textValue)
-      textValue = next;
+    if (next !== textValue) textValue = next;
   });
 
   function handleInput(event: Event) {
@@ -28,8 +38,7 @@
 
     event.preventDefault();
 
-    if (!textareaEl)
-      return;
+    if (!textareaEl) return;
 
     const start = textareaEl.selectionStart ?? 0;
     const end = textareaEl.selectionEnd ?? 0;
@@ -55,7 +64,7 @@
 ></textarea>
 {#if isPreview}
   <div {...props}>
-    <Markdown md={textValue} {...props}>
+    <Markdown md={textValue} {...props} {plugins}>
       {#snippet h1(props)}
         {@const { children, style, class: className, ...rest } = props}
         <h1 {style} class={className} {...rest}>

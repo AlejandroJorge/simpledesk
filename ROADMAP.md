@@ -2,4 +2,3 @@
 
 - Recurrent tasks: daily, weekly (specific days)
 - Links in markdown textarea
-- TODOs in markdown
