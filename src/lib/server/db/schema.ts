@@ -13,7 +13,8 @@ export const tasks = sqliteTable('task', {
   status: integer('status', { mode: "boolean" }).notNull().default(false),
   due: integer('due', { mode: "timestamp" }),
   content: text('content'),
-  categoryId: text('category_id').notNull()
+  categoryId: text('category_id').notNull(),
+  recurrence: text('recurrence', { enum: ["daily", "workday"] }).$type<"daily" | "workday" | null>()
 })
 
 export const notes = sqliteTable('note',{

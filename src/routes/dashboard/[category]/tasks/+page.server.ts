@@ -4,6 +4,7 @@ import { db } from "$lib/server/db";
 import { categories, tasks } from "$lib/server/db/schema";
 import { and, asc, eq, sql, like, lt, or, isNull, count } from "drizzle-orm";
 import dayjs from "$lib/dayjs";
+import { normalizeRecurrence } from "$lib/tasks/recurrence";
 
 const resolveCategory = async (categoryId: string) => {
   const [record] = await db.select().from(categories).where(eq(categories.id, categoryId)).limit(1);
@@ -90,11 +91,15 @@ export const actions = {
     const due = dueInput ? dayjs.utc(dueInput).toDate() : null;
     const content = (data.get("content") as string) ?? null;
     const status = data.get("status") ? true : false;
+    const recurrenceInput = (data.get("recurrence") as string | null)?.trim() ?? null;
+    const recurrence = normalizeRecurrence(recurrenceInput);
+    if (recurrence && !due)
+      return fail(400, { message: "Recurring tasks require a due date" });
 
     const { id: categoryId } = await resolveCategory(params.category);
 
     try {
-      await db.insert(tasks).values({ name, due, content, categoryId, status });
+      await db.insert(tasks).values({ name, due, content, categoryId, status, recurrence });
     } catch (err) {
       console.error("[tasks] createTask", err);
       return fail(500, { message: "Unable to create task" });
@@ -115,9 +120,13 @@ export const actions = {
     const due = dueInput ? dayjs.utc(dueInput).toDate() : null;
     const content = (data.get("content") as string) ?? null;
     const status = data.get("status") ? true : false;
+    const recurrenceInput = (data.get("recurrence") as string | null)?.trim() ?? null;
+    const recurrence = normalizeRecurrence(recurrenceInput);
+    if (recurrence && !due)
+      return fail(400, { message: "Recurring tasks require a due date" });
 
     try {
-      await db.update(tasks).set({ name, due, content, status }).where(eq(tasks.id, id));
+      await db.update(tasks).set({ name, due, content, status, recurrence }).where(eq(tasks.id, id));
     } catch (err) {
       console.error("[tasks] updateTask", err);
       return fail(500, { message: "Unable to update task" });

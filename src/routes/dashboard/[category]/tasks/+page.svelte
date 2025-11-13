@@ -31,6 +31,11 @@
     { label: "Next month", value: "30" },
   ] as const;
   const previewToggleId = "task-preview-toggle";
+  const recurrenceOptions = [
+    { label: "Does not repeat", value: "" },
+    { label: "Daily", value: "daily" },
+    { label: "Weekdays", value: "workday" },
+  ] as const;
 
   let taskModalState: {
     isOpen: boolean;
@@ -42,6 +47,7 @@
       status: boolean;
       due: Date | null;
       content: string | null;
+      recurrence: "" | "daily" | "workday";
     };
   } = $state({
     isOpen: false,
@@ -53,6 +59,7 @@
       status: false,
       due: null,
       content: "",
+      recurrence: "",
     },
   });
 
@@ -96,6 +103,23 @@
     invalidateAll();
 
     taskModalState.isOpen = false;
+  }
+
+  async function rescheduleTask(id: string) {
+    const response = await fetchWithErrorToast(
+      "/api/reschedule-task",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      },
+      "Unable to reschedule task"
+    );
+
+    if (!response)
+      return;
+
+    invalidateAll();
   }
 
   function applyFiltersToUrl(url: URL) {
@@ -142,6 +166,7 @@
     taskModalState.fields.due = dayjs.utc().startOf("day").toDate();
     taskModalState.fields.status = false;
     taskModalState.fields.content = "";
+    taskModalState.fields.recurrence = "";
     taskModalState.isOpen = true;
     taskInitialContent = "";
   }
@@ -154,6 +179,7 @@
     taskModalState.fields.name = task.name;
     taskModalState.fields.due = task.due;
     taskModalState.fields.content = task.content;
+    taskModalState.fields.recurrence = (task.recurrence as "daily" | "workday" | null) ?? "";
     taskModalState.isOpen = true;
     taskInitialContent = task.content ?? "";
   }
@@ -319,6 +345,7 @@
       emptyMessage="No tasks yet. Add your first one."
       onToggle={(task, nextValue) => updateTaskStatus(task.id, nextValue)}
       onSelect={openUpdateTaskModal}
+      onReschedule={(task) => rescheduleTask(task.id)}
     />
   </div>
 
@@ -363,7 +390,7 @@
         {taskModalState.mode === "create" ? "New task" : "Update task"}
       </h3>
     </div>
-  <div class="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
+  <div class="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
     <div class="flex flex-col gap-2">
       <label
         for="name"
@@ -418,6 +445,23 @@
         class="rounded-2xl border border-white/10 bg-[#05070f] px-4 py-3 text-sm text-white focus:border-white/30 focus:outline-none disabled:opacity-40"
         disabled={!taskModalState.fields.due}
       />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label
+        for="recurrence"
+        class="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500"
+        >Repeats</label
+      >
+      <select
+        id="recurrence"
+        name="recurrence"
+        bind:value={taskModalState.fields.recurrence}
+        class="rounded-2xl border border-white/10 bg-[#05070f] px-4 py-3 text-sm text-white focus:border-white/30 focus:outline-none"
+      >
+        {#each recurrenceOptions as option}
+          <option value={option.value}>{option.label}</option>
+        {/each}
+      </select>
     </div>
   </div>
     <input type="hidden" name="due" value={serializedDueValue} />
