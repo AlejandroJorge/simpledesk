@@ -54,6 +54,12 @@
     },
   });
 
+  const serializedDueValue = $derived(
+    taskModalState.fields.due
+      ? dayjs.utc(taskModalState.fields.due).second(0).millisecond(0).toISOString()
+      : ""
+  );
+
   async function updateTaskStatus(id: string, value: boolean) {
     await fetch("/api/update-task-status", {
       method: "POST",
@@ -117,7 +123,7 @@
     taskModalState.isPreview = false;
     taskModalState.fields.id = "";
     taskModalState.fields.name = "";
-    taskModalState.fields.due = new Date();
+    taskModalState.fields.due = dayjs.utc().startOf("day").toDate();
     taskModalState.fields.status = false;
     taskModalState.fields.content = "";
     taskModalState.isOpen = true;
@@ -161,6 +167,48 @@
     taskDiscardModalOpen = false;
     taskModalState.isOpen = false;
     taskModalState.fields.content = taskInitialContent;
+  }
+
+  function applyDateSelection(value: string) {
+    if (!value) {
+      taskModalState.fields.due = null;
+      return;
+    }
+    const current = taskModalState.fields.due ? dayjs.utc(taskModalState.fields.due) : null;
+    const hour = current ? current.hour() : 0;
+    const minute = current ? current.minute() : 0;
+    taskModalState.fields.due = dayjs
+      .utc(value, "YYYY-MM-DD")
+      .hour(hour)
+      .minute(minute)
+      .second(0)
+      .millisecond(0)
+      .toDate();
+  }
+
+  function applyHourSelection(value: string) {
+    if (!taskModalState.fields.due) return;
+    if (!value) {
+      taskModalState.fields.due = dayjs
+        .utc(taskModalState.fields.due)
+        .hour(0)
+        .minute(0)
+        .second(0)
+        .millisecond(0)
+        .toDate();
+      return;
+    }
+    const [hourPart, minutePart = "00"] = value.split(":");
+    const hour = Number.parseInt(hourPart, 10);
+    const minute = Number.parseInt(minutePart, 10) || 0;
+    if (Number.isNaN(hour) || hour < 0 || hour > 23) return;
+    taskModalState.fields.due = dayjs
+      .utc(taskModalState.fields.due)
+      .hour(hour)
+      .minute(minute)
+      .second(0)
+      .millisecond(0)
+      .toDate();
   }
 </script>
 
@@ -291,7 +339,7 @@
         {taskModalState.mode === "create" ? "New task" : "Update task"}
       </h3>
     </div>
-  <div class="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+  <div class="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
     <div class="flex flex-col gap-2">
       <label
         for="name"
@@ -309,27 +357,46 @@
     </div>
     <div class="flex flex-col gap-2">
       <label
-        for="due"
+        for="due-date"
         class="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500"
         >Due date</label
       >
       <input
+        id="due-date"
         bind:value={
           () =>
             taskModalState.fields.due
               ? dayjs.utc(taskModalState.fields.due).format("YYYY-MM-DD")
               : "",
-          (v) =>
-            (taskModalState.fields.due = v
-              ? dayjs.utc(v, "YYYY-MM-DD").toDate()
-              : null)
+          (v) => applyDateSelection(v)
         }
-        name="due"
         type="date"
         class="rounded-2xl border border-white/10 bg-[#05070f] px-4 py-3 text-sm text-white focus:border-white/30 focus:outline-none"
       />
     </div>
+    <div class="flex flex-col gap-2">
+      <label
+        for="due-hour"
+        class="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500"
+        >Due hour</label
+      >
+      <input
+        id="due-hour"
+        type="time"
+        step="3600"
+        bind:value={
+          () =>
+            taskModalState.fields.due
+              ? dayjs.utc(taskModalState.fields.due).format("HH:00")
+              : "",
+          (v) => applyHourSelection(v)
+        }
+        class="rounded-2xl border border-white/10 bg-[#05070f] px-4 py-3 text-sm text-white focus:border-white/30 focus:outline-none disabled:opacity-40"
+        disabled={!taskModalState.fields.due}
+      />
+    </div>
   </div>
+    <input type="hidden" name="due" value={serializedDueValue} />
     <div class="flex w-full flex-col gap-2">
       <div class="flex items-center justify-between gap-3">
         <label

@@ -86,8 +86,8 @@ export const actions = {
     const name = data.get("name") as string;
     if (!name) return fail(400, { name, missing: true });
 
-    const dueInput = (data.get("due") as string) ?? "";
-    const due = dueInput ? dayjs.utc(dueInput as string, "YYYY-MM-DD").toDate() : null;
+    const dueInput = ((data.get("due") as string) ?? "").trim();
+    const due = dueInput ? dayjs.utc(dueInput).toDate() : null;
     const content = (data.get("content") as string) ?? null;
     const status = data.get("status") ? true : false;
 
@@ -106,8 +106,8 @@ export const actions = {
     const name = data.get("name") as string;
     if (!name) return fail(400, { name, missing: true });
 
-    const dueInput = (data.get("due") as string) ?? "";
-    const due = dueInput ? dayjs.utc(dueInput as string, "YYYY-MM-DD").toDate() : null;
+    const dueInput = ((data.get("due") as string) ?? "").trim();
+    const due = dueInput ? dayjs.utc(dueInput).toDate() : null;
     const content = (data.get("content") as string) ?? null;
     const status = data.get("status") ? true : false;
 

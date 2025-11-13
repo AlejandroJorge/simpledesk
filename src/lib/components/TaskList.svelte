@@ -29,10 +29,19 @@
     onSelect?: (task: Task) => void | Promise<void>;
   } = $props();
 
+  function hasDueTime(due: Task["due"]) {
+    if (!due)
+      return false;
+    const parsed = dayjs.utc(due);
+    return parsed.hour() !== 0 || parsed.minute() !== 0;
+  }
+
   function formatDue(due: Task["due"]) {
     if (!due)
       return null;
-    return dayjs.utc(due).format("dddd D, MMM YYYY");
+    const parsed = dayjs.utc(due);
+    const dateLabel = parsed.format("dddd D, MMM YYYY");
+    return hasDueTime(due) ? `${dateLabel} · ${parsed.format("HH:mm")}` : dateLabel;
   }
 
   function handleToggle(task: Task) {
