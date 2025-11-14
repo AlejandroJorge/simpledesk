@@ -6,23 +6,23 @@ RUN npm ci
 FROM deps AS build
 WORKDIR /app
 COPY . .
-ARG AUTH=false
-ARG APPLICATION_SECRET=
+# Defaults only help the build stage; override them if needed when building.
 ARG DATABASE_URL=/tmp/local.db
 ARG WORKSPACE_TIMEZONE=UTC
-ENV AUTH=${AUTH} \
-    APPLICATION_SECRET=${APPLICATION_SECRET} \
-    DATABASE_URL=${DATABASE_URL} \
-    WORKSPACE_TIMEZONE=${WORKSPACE_TIMEZONE}
-RUN npm run build
+
+# Inject a throwaway secret so the build can run; the real secret is provided at runtime.
+RUN DATABASE_URL=${DATABASE_URL} \
+    WORKSPACE_TIMEZONE=${WORKSPACE_TIMEZONE} \
+    SESSION_SECRET=build-time-placeholder \
+    npm run build
 
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
-    AUTH=false \
-    APPLICATION_SECRET= \
     DATABASE_URL=/data/local.db \
     WORKSPACE_TIMEZONE=UTC
+
+# SESSION_SECRET must be provided at runtime via `docker run -e SESSION_SECRET=...`.
 
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 svelte
 

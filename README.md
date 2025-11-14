@@ -50,7 +50,10 @@ docker build -t organization-tool .
 docker run \
   -p 3000:3000 \
   -e DATABASE_URL=/data/local.db \
+  -e SESSION_SECRET=$(openssl rand -hex 32) \
   -v $(pwd)/local.db:/data/local.db \
   organization-tool
 ```
-By default the container listens on `PORT` (defaults to 3000). Adjust `DATABASE_URL` to point at the mounted SQLite file path inside the container.
+By default the container listens on `PORT` (defaults to 3000). Adjust `DATABASE_URL` to point at the mounted SQLite file path inside the container, set `SESSION_SECRET` to a long random string (you can also use `--env-file` or an orchestrator secret), and optionally override `WORKSPACE_TIMEZONE`.
+
+> The Docker build stage injects a throwaway secret so that `npm run build` succeeds without leaking real credentials. Always pass the production `SESSION_SECRET` (and any other sensitive values) at container runtime, not via `ARG` or `ENV` instructions in the image.
