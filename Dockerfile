@@ -30,10 +30,12 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/build ./build
 COPY package*.json ./
 COPY drizzle ./drizzle
-COPY docker-entrypoint.sh
+COPY docker-entrypoint.sh ./
 
 RUN mkdir -p /data && chown -R svelte:nodejs /data
 VOLUME ["/data"]
+
+RUN chmod +x docker-entrypoint.sh
 
 USER svelte
 EXPOSE 3000
