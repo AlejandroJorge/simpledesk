@@ -7,6 +7,7 @@ const db = drizzle(sqlite)
 
 async function main() {
   console.log("[migrate] applying pending migrations…");
+
   migrate(db, { migrationsFolder: "./drizzle" })
   console.log("[migrate] done");
 }
