@@ -24,8 +24,10 @@ const resolveTimezone = (value?: string) => {
 
 export const APP_SESSION_COOKIE = "app_session";
 
-export const appConfig = {
-  sessionSecret: assertPresent(normalize(env.SESSION_SECRET), "SESSION_SECRET"),
-  databaseUrl: assertPresent(normalize(env.DATABASE_URL), "DATABASE_URL"),
-  workspaceTimezone: resolveTimezone(env.WORKSPACE_TIMEZONE)
+export function getRuntimeEnv() {
+  return {
+    sessionSecret: assertPresent(normalize(env.SESSION_SECRET), "SESSION_SECRET"),
+    databaseUrl: assertPresent(normalize(env.DATABASE_URL), "DATABASE_URL"),
+    workspaceTimezone: resolveTimezone(env.WORKSPACE_TIMEZONE)
+  }
 };

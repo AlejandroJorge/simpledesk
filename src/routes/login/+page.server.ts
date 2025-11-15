@@ -1,6 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { APP_SESSION_COOKIE, appConfig } from "$lib/server/config";
+import { APP_SESSION_COOKIE, getRuntimeEnv } from "$lib/server/config";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
 import { eq } from "drizzle-orm";
@@ -43,7 +43,7 @@ export const actions = {
       const secure = url.protocol === "https:";
       const sessionToken = createSessionToken(
         { userId: userRecord.id, issuedAt: Date.now() },
-        appConfig.sessionSecret
+        getRuntimeEnv().sessionSecret
       );
 
       cookies.set(APP_SESSION_COOKIE, sessionToken, {

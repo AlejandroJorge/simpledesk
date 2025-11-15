@@ -4,7 +4,7 @@ import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "$lib/server/auth/password";
-import { APP_SESSION_COOKIE, appConfig } from "$lib/server/config";
+import { APP_SESSION_COOKIE, getRuntimeEnv } from "$lib/server/config";
 import { createSessionToken, SESSION_MAX_AGE_SECONDS } from "$lib/server/auth/session";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -60,7 +60,7 @@ export const actions = {
 
     const sessionToken = createSessionToken(
       { userId: userRecord.id, issuedAt: Date.now() },
-      appConfig.sessionSecret
+      getRuntimeEnv().sessionSecret
     );
 
     const secure = url.protocol === "https:";

@@ -3,14 +3,14 @@ import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import { categories, tasks, notes } from "$lib/server/db/schema";
 import { and, asc, eq, or, isNull, like, lt, sql, count } from "drizzle-orm";
-import { appConfig } from "$lib/server/config";
+import { getRuntimeEnv } from "$lib/server/config";
 import dayjs from "$lib/dayjs";
 
 const TASKS_PER_PAGE = 10;
 
 type TaskFilters = { q?: string; onlyTodo?: boolean; interval?: number };
 
-const workspaceTimezone = appConfig.workspaceTimezone;
+const workspaceTimezone = getRuntimeEnv().workspaceTimezone;
 
 const buildTaskWhereClause = (userId: string, { q, onlyTodo, interval }: TaskFilters) =>
   and(

@@ -5,7 +5,7 @@ import { categories, tasks } from "$lib/server/db/schema";
 import { and, asc, eq, sql, like, lt, or, isNull, count } from "drizzle-orm";
 import dayjs from "$lib/dayjs";
 import { normalizeRecurrence } from "$lib/tasks/recurrence";
-import { appConfig } from "$lib/server/config";
+import { getRuntimeEnv } from "$lib/server/config";
 
 const resolveCategory = async (userId: string, categoryId: string) => {
   const [record] = await db
@@ -21,7 +21,7 @@ const TASKS_PER_PAGE = 25;
 
 type TaskFilters = { q?: string; onlyTodo?: boolean; interval?: number };
 
-const workspaceTimezone = appConfig.workspaceTimezone;
+const workspaceTimezone = getRuntimeEnv().workspaceTimezone;
 
 const buildTaskWhereClause = (userId: string, categoryId: string, { q, onlyTodo, interval }: TaskFilters) =>
   and(

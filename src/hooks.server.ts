@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 import type { Handle } from "@sveltejs/kit";
-import { APP_SESSION_COOKIE, appConfig } from "$lib/server/config";
+import { APP_SESSION_COOKIE, getRuntimeEnv } from "$lib/server/config";
 import { parseSessionToken } from "$lib/server/auth/session";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
@@ -14,7 +14,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   let user: { id: string; username: string } | null = null;
 
   if (sessionToken) {
-    const parsed = parseSessionToken(sessionToken, appConfig.sessionSecret);
+    const parsed = parseSessionToken(sessionToken, getRuntimeEnv().sessionSecret);
     if (parsed) {
       const [record] = await db
         .select({ id: users.id, username: users.username })
