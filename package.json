@@ -1,10 +1,29 @@
 {
-	"name": "organization-tool",
-	"description": "Simple SvelteKit-based organization tool for managing tasks and notes with SQLite.",
-	"version": "0.1.0",
-	"license": "MIT",
-	"private": true,
-	"type": "module",
+  "name": "simpledesk",
+  "displayName": "SimpleDesk",
+  "description": "SimpleDesk – a simple, unbloated organizer for tasks and notes.",
+  "version": "0.1.1",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+
+  "author": "Jorge Alejandro <jorge.alejandro@ramza.me> (https://ramza.me)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlejandroJorge/simpledesk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AlejandroJorge/simpledesk/issues"
+  },
+  "keywords": [
+    "simpledesk",
+    "tasks",
+    "notes",
+    "organizer",
+    "sveltekit",
+    "sqlite",
+    "productivity"
+  ],
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",

@@ -1,14 +1,14 @@
 services:
   app:
-    image: organization-tool:latest
-    container_name: organization-tool
+    image: yyyyyyyyyy:latest
+    container_name: simpledesk 
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.organization.rule=Host(`organization.ramza.me`)"
-      - "traefik.http.routers.organization.entrypoints=websecure"
-      - "traefik.http.routers.organization.tls.certresolver=le"
-      - "traefik.http.services.organization.loadbalancer.server.port=3000"
+      - "traefik.http.routers.simpledesk.rule=Host(`simpledesk.ramza.me`)"
+      - "traefik.http.routers.simpledesk.entrypoints=websecure"
+      - "traefik.http.routers.simpledesk.tls.certresolver=le"
+      - "traefik.http.services.simpledesk.loadbalancer.server.port=3000"
     volumes:
       - ${DATA_DIR}:/data
     environment:

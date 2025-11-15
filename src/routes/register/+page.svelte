@@ -1,4 +1,6 @@
 <script lang="ts">
+  import logo from "$lib/assets/logo.png"
+
   import { enhance } from "$app/forms";
   import { createErrorToastEnhancer } from "$lib/utils/toast-errors";
   import type { PageData } from "./$types";
@@ -14,6 +16,7 @@
     class="w-full max-w-md space-y-6 rounded-2xl border border-white/10 bg-[#090b15] p-8 shadow-[0_35px_120px_rgba(4,6,19,0.8)]"
   >
     <header class="space-y-2">
+      <img src={logo} alt="SimpleDesk Logo" class="my-[-2rem]" />
       <p class="text-[11px] uppercase tracking-[0.4em] text-slate-500">Create workspace user</p>
       <h1 class="text-2xl font-semibold text-white">Register</h1>
       <p class="text-sm text-slate-400">Pick a username and password to manage your tasks.</p>

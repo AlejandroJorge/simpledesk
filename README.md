@@ -1,9 +1,9 @@
-# Organization Tool
-Simple organization tool for managing tasks and notes. 
+# SimpleDesk
+Organization tool for managing notes and tasks. 
 
 Docker compose file provided as example to configure
 
-Docker image can be found [here](https://hub.docker.com/repository/docker/jorgealejandro/organization-tool/general)
+Docker image can be found [here](https://hub.docker.com/repository/docker/jorgealejandro/simpledesk/general)
 
 ## Requirements
 - Node.js 22+

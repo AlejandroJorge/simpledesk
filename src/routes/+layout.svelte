@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/assets/favicon.ico';
 	import ToastHost from '$lib/components/ToastHost.svelte';
 	import { setContext } from 'svelte';
 	import { WORKSPACE_TIMEZONE_CONTEXT } from '$lib/context/workspace-timezone';
