@@ -1,6 +1,6 @@
 services:
   app:
-    image: yyyyyyyyyy:latest
+    image: simpledesk:latest
     container_name: simpledesk 
     restart: unless-stopped
     labels:
