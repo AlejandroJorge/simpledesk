@@ -28,4 +28,4 @@ RUN mkdir -p /data \
 VOLUME ["/data"]
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["npm", "run", "start"]
+CMD ["node", "build"]
