@@ -43,7 +43,7 @@ export const actions = {
 
     try {
       const passwordHash = await hashPassword(password);
-      await db.insert(users).values({ username, passwordHash });
+      await getDb().insert(users).values({ username, passwordHash });
     } catch (err) {
       console.error("[auth] register", err);
       return fail(500, { message: "Unable to create user" });

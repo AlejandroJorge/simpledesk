@@ -25,7 +25,6 @@ const resolveTimezone = (value?: string) => {
 export const APP_SESSION_COOKIE = "app_session";
 
 export function getRuntimeEnv() {
-  console.trace(`TRAZA EN GETRUNTIMEENV`)
   return {
     sessionSecret: assertPresent(normalize(env.SESSION_SECRET), "SESSION_SECRET"),
     databaseUrl: assertPresent(normalize(env.DATABASE_URL), "DATABASE_URL"),
