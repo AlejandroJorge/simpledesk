@@ -11,7 +11,7 @@
 </script>
 
 <svelte:head>
-	<title>Organize | Tasks & Notes</title>
+	<title>SimpleDesk</title>
 	<meta
 		name="description"
 		content="Organize your work with simple task lists and notes, all in one minimalist dashboard."

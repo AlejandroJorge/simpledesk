@@ -46,7 +46,7 @@
           <p class="text-[10px] font-semibold uppercase tracking-[0.45em] text-slate-500">
             Spaces
           </p>
-          <h1 class="text-lg font-semibold text-white tracking-tight">Organize</h1>
+          <h1 class="text-lg font-semibold text-white tracking-tight">SimpleDesk</h1>
         </div>
         <button
           class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-white/10 text-base text-slate-400 transition hover:text-white lg:hidden"
